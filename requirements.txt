@@ -1,0 +1,5 @@
+flask
+garminconnect
+pandas
+python-dotenv
+flask-cors
