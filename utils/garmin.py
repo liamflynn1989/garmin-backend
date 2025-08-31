@@ -10,7 +10,7 @@ load_dotenv()
 
 
 USERS = {
-    # "Liam": {"email": os.environ["LIAM_EMAIL"], "password": os.environ["LIAM_PASSWORD"]},
+    "Liam": {"email": os.environ["LIAM_EMAIL"], "password": os.environ["LIAM_PASSWORD"]},
     "Nawaaaz": {"email": os.environ["WAAAZ_EMAIL"], "password": os.environ["WAAAZ_PASSWORD"]},
     "Cormo": {"email": os.environ["CORMO_EMAIL"], "password": os.environ["CORMO_PASSWORD"]},
 }
