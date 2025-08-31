@@ -67,8 +67,16 @@ def fetch_all_users():
         try:
             print(f"🔄 Fetching for {name}...")
             data = fetch_body_battery(creds["email"], creds["password"])
+
+            if not data or "bodyBatteryValuesArray" not in data[0]:
+                print(f"⚠️ No valid data for {name}")
+                result[name] = []
+                continue
+
             df = pd.DataFrame(data[0]["bodyBatteryValuesArray"], columns=["timestamp_ms", "body_battery"])
-            df['body_battery']  = df['body_battery'].fillna(method="ffill").fillna(method="bfill")  
+            if not df.empty:
+                df['body_battery'] = df['body_battery'].fillna(method="ffill").fillna(method="bfill")
+
             result[name] = df.to_dict(orient="records")
             time.sleep(3)  # avoid triggering rate limits
         except GarminConnectTooManyRequestsError:
