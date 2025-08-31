@@ -68,6 +68,7 @@ def fetch_all_users():
             print(f"🔄 Fetching for {name}...")
             data = fetch_body_battery(creds["email"], creds["password"])
             df = pd.DataFrame(data[0]["bodyBatteryValuesArray"], columns=["timestamp_ms", "body_battery"])
+            df = df.where(pd.notnull(df), None)  # Replace NaN with None
             result[name] = df.to_dict(orient="records")
             time.sleep(3)  # avoid triggering rate limits
         except GarminConnectTooManyRequestsError:
