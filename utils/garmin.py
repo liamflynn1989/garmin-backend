@@ -6,6 +6,14 @@ from garminconnect import Garmin, GarminConnectTooManyRequestsError, GarminConne
 from dotenv import load_dotenv
 import time
 
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
 load_dotenv()
 
 
@@ -28,13 +36,13 @@ def login_garmin(email, password, session_path):
         client.login()
         with open(session_path, "wb") as f:
             pickle.dump(client, f)
-        print(f"✅ Logged in and saved session: {session_path}")
+        logging.info(f"✅ Logged in and saved session: {session_path}")
         return client
     except GarminConnectTooManyRequestsError:
-        print("❌ Too many requests — backing off.")
+        logging.info("❌ Too many requests — backing off.")
         raise
     except Exception as e:
-        print(f"❌ Failed login for {email}: {e}")
+        logging.info(f"❌ Failed login for {email}: {e}")
         raise
 
 def load_or_login(user: str, email: str, password: str):
@@ -47,10 +55,10 @@ def load_or_login(user: str, email: str, password: str):
                 client = pickle.load(f)
             # test session is valid
             client.get_body_battery(datetime.date.today())
-            print(f"✅ Loaded session for {email}")
+            logging.info(f"✅ Loaded session for {email}")
             return client
         except Exception as e:
-            print(f"⚠️ Failed to reuse session for {email}, retrying login: {e}")
+            logging.info(f"⚠️ Failed to reuse session for {email}, retrying login: {e}")
 
     # fallback to fresh login
     return login_garmin(email, password, session_path)
@@ -65,11 +73,11 @@ def fetch_all_users():
     result = {}
     for name, creds in USERS.items():
         try:
-            print(f"🔄 Fetching for {name}...")
+            logging.info(f"🔄 Fetching for {name}...")
             data = fetch_body_battery(creds["email"], creds["password"])
 
             if not data or "bodyBatteryValuesArray" not in data[0]:
-                print(f"⚠️ No valid data for {name}")
+                logging.info(f"⚠️ No valid data for {name}")
                 result[name] = []
                 continue
 
@@ -80,7 +88,7 @@ def fetch_all_users():
             result[name] = df.to_dict(orient="records")
             time.sleep(3)  # avoid triggering rate limits
         except GarminConnectTooManyRequestsError:
-            print(f"🚫 Rate limited while fetching {name} — skipping.")
+            logging.info(f"🚫 Rate limited while fetching {name} — skipping.")
         except Exception as e:
-            print(f"❌ Error fetching data for {name}: {e}")
+            logging.info(f"❌ Error fetching data for {name}: {e}")
     return result
